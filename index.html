@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>河口電機株式会社｜一新版（編集デザイン）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;600;700;800&family=Cardo:ital,wght@0,400;0,700;1,400&family=Noto+Sans+JP:wght@300;400;500;700&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/yakuhanjp@3.4.1/dist/css/yakuhanmp.min.css">
+<style>
+  :root{
+    --paper:#ffffff;--paper2:#f6f5f1;--ink:#17181c;--ink2:#3a3c43;--muted:#71737b;
+    --line:#e7e5dd;--line2:#d9d6cc;--navy:#152438;--navy2:#1d3049;--accent:#274e79;
+    --mincho:YakuHanMP,"Shippori Mincho B1","A1明朝","A1 Mincho",serif;
+    --sans:"Noto Sans JP",sans-serif;--en:"Cardo",serif;--label:"Inter",sans-serif;
+    --maxw:1180px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+  body{font-family:var(--sans);font-weight:400;color:var(--ink);background:var(--paper);line-height:2;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 32px}
+  /* 日英対のラベル */
+  .label{display:inline-flex;align-items:baseline;gap:.7em}
+  .label .en{font-family:var(--en);font-style:italic;font-size:1.15rem;color:var(--accent);letter-spacing:.02em}
+  .label .jp{font-family:var(--label);font-size:.7rem;letter-spacing:.28em;color:var(--muted);text-transform:none}
+  h1,h2,h3{font-family:var(--mincho);font-weight:700;letter-spacing:.04em;line-height:1.7}
+  .thin{font-weight:500}
+  .ph{position:relative;background:linear-gradient(150deg,#2a2d34,#14161b);overflow:hidden;display:flex;align-items:center;justify-content:center}
+  .ph.light{background:linear-gradient(150deg,#eceae2,#f6f5f1)}
+  .ph .glyph{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:9px;color:rgba(255,255,255,.5);font-family:var(--label);font-size:.66rem;letter-spacing:.22em}
+  .ph.light .glyph{color:#a7a396}
+  .ph .glyph svg{width:32px;height:32px}
+  .ph .grain{position:absolute;inset:0;opacity:.06;background-image:radial-gradient(#fff 1px,transparent 1px);background-size:5px 5px}
+
+  /* ローダー */
+  #loader{position:fixed;inset:0;z-index:200;background:var(--paper);display:flex;align-items:center;justify-content:center;transition:opacity .8s ease,visibility .8s}
+  #loader.gone{opacity:0;visibility:hidden}
+  #loader .lg{font-family:var(--mincho);font-weight:700;font-size:1.6rem;letter-spacing:.16em;color:var(--ink);opacity:0;animation:lgin 1.1s ease forwards}
+  @keyframes lgin{to{opacity:1}}
+
+  header{position:fixed;top:0;left:0;right:0;z-index:90;transition:background .4s,border-color .4s,color .4s;border-bottom:1px solid transparent}
+  header.solid{background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom-color:var(--line)}
+  .nav{display:flex;align-items:center;justify-content:space-between;height:82px}
+  .brand{display:flex;align-items:center;gap:13px}
+  .brand .mk{width:34px;height:34px;flex:none}
+  .brand .mk svg{width:100%;height:100%}
+  .brand .nm{font-family:var(--mincho);font-weight:700;font-size:1.2rem;letter-spacing:.08em;line-height:1}
+  .brand .nm small{display:block;font-family:var(--label);font-weight:400;font-size:.5rem;letter-spacing:.3em;color:var(--accent);margin-top:5px}
+  header:not(.solid) .brand .nm{color:#fff}header:not(.solid) .brand .nm small{color:rgba(255,255,255,.8)}
+  .menu{display:flex;align-items:center;gap:34px}
+  .menu a{font-family:var(--label);font-size:.78rem;letter-spacing:.06em;color:var(--ink2);transition:color .2s}
+  header:not(.solid) .menu a{color:rgba(255,255,255,.9)}
+  .menu a .en{font-family:var(--en);font-style:italic;font-size:.95rem;margin-right:.35em}
+  .menu a:hover{color:var(--accent)}
+  header:not(.solid) .menu a:hover{color:#fff;opacity:.7}
+  .menu .contact{border:1px solid currentColor;padding:9px 18px;font-family:var(--en);font-style:italic;font-size:.92rem}
+  .burger{display:none;flex-direction:column;gap:5px;background:none;border:0;cursor:pointer;padding:8px;z-index:110}
+  .burger span{width:26px;height:1.5px;background:#fff;display:block;transition:.3s}
+  header.solid .burger span{background:var(--ink)}
+
+  /* ヒーロー */
+  .hero{position:relative;min-height:100vh;display:grid;grid-template-columns:1.1fr .9fr}
+  .hero .txt{display:flex;flex-direction:column;justify-content:center;padding:120px 0 80px 0}
+  .hero .txt .in{max-width:560px;margin-left:auto;padding:0 60px 0 32px}
+  .hero .en-eye{font-family:var(--en);font-style:italic;font-size:1.2rem;color:var(--accent);margin-bottom:26px;opacity:0;animation:fade 1.2s ease .9s forwards}
+  .hero h1{font-size:clamp(2.6rem,4.8vw,4.2rem);line-height:1.55;letter-spacing:.06em;margin-bottom:30px}
+  .hero h1 .l{display:block;overflow:hidden}
+  .hero h1 .l i{display:inline-block;font-style:normal;transform:translateY(110%);animation:rise 1.1s cubic-bezier(.19,1,.22,1) forwards}
+  .hero h1 .l:nth-child(2) i{animation-delay:.16s}
+  .hero .sub{color:var(--ink2);font-size:1.02rem;font-weight:400;letter-spacing:.04em;max-width:440px;opacity:0;animation:fade 1.2s ease 1.15s forwards}
+  .hero .en-tag{font-family:var(--en);font-style:italic;color:var(--muted);margin-top:18px;font-size:1.02rem;opacity:0;animation:fade 1.2s ease 1.3s forwards}
+  @keyframes rise{to{transform:none}}@keyframes fade{to{opacity:1}}
+  .hero .visual{position:relative;overflow:hidden}
+  .hero .visual .ph{position:absolute;inset:0}
+  .hero .visual .ph img,.hero .visual .ph{border-radius:0}
+  .hero .visual .kb{position:absolute;inset:0;animation:kb 18s ease-in-out infinite alternate}
+  @keyframes kb{to{transform:scale(1.08)}}
+  .scrollcue{position:absolute;left:32px;bottom:30px;z-index:5;font-family:var(--label);font-size:.6rem;letter-spacing:.24em;color:#fff;display:flex;align-items:center;gap:12px;mix-blend-mode:difference}
+  .scrollcue .bar{width:1px;height:46px;background:#fff;animation:cue 2.6s ease-in-out infinite}
+  @keyframes cue{0%,100%{opacity:.3;transform:scaleY(.6)}50%{opacity:1;transform:scaleY(1)}}
+  @media(prefers-reduced-motion:reduce){.hero h1 .l i{animation:none;transform:none}.hero .en-eye,.hero .sub,.hero .en-tag{animation:none;opacity:1}.hero .visual .kb{animation:none}#loader .lg{animation:none;opacity:1}.scrollcue .bar{animation:none}}
+  @media(max-width:900px){.hero{grid-template-columns:1fr;min-height:auto}.hero .txt{padding:130px 0 70px;order:2}.hero .txt .in{margin:0;padding:0 32px}.hero .visual{order:1;height:56vh}}
+
+  section{padding:140px 0;position:relative}
+  .sec-label{margin-bottom:56px}
+
+  /* ステートメント */
+  .statement{background:var(--paper2);text-align:center}
+  .statement .in{max-width:760px;margin:0 auto}
+  .statement .sec-label{display:flex;justify-content:center}
+  .statement p.lead{font-family:var(--mincho);font-weight:500;font-size:clamp(1.4rem,2.7vw,2.05rem);line-height:2.2;letter-spacing:.06em}
+  .statement p.body{color:var(--ink2);margin-top:36px;font-size:1rem;line-height:2.3;letter-spacing:.03em}
+
+  /* 事業（編集的リスト） */
+  .biz .sec-head{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:20px;margin-bottom:20px}
+  .biz .sec-head h2{font-size:clamp(1.7rem,3.2vw,2.4rem);letter-spacing:.05em}
+  .biz .sec-head .note{color:var(--muted);font-size:.92rem;max-width:340px}
+  .row{display:grid;grid-template-columns:64px 1fr 300px;gap:34px;align-items:center;padding:40px 0;border-top:1px solid var(--line)}
+  .row:last-child{border-bottom:1px solid var(--line)}
+  .row .no{font-family:var(--en);font-style:italic;font-size:1.5rem;color:var(--line2);align-self:start;padding-top:6px}
+  .row .body .en{font-family:var(--en);font-style:italic;color:var(--accent);font-size:1.02rem}
+  .row .body h3{font-size:1.5rem;letter-spacing:.05em;margin:6px 0 12px}
+  .row .body p{color:var(--ink2);font-size:.95rem;max-width:560px;line-height:2}
+  .row .thumb{height:150px}
+  .row .thumb .ph{position:absolute;inset:0}
+  .row .thumb{position:relative;overflow:hidden}
+  .row:hover .thumb .ph{transform:scale(1.05)}
+  .row .thumb .ph{transition:transform .6s ease}
+  @media(max-width:860px){.row{grid-template-columns:40px 1fr;gap:20px}.row .thumb{grid-column:1/-1;height:180px;margin-top:6px}}
+
+  /* 実績 */
+  .works{background:var(--navy);color:#fff}
+  .works .label .jp{color:rgba(255,255,255,.55)}.works .label .en{color:#9db8dc}
+  .works .sec-head{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:20px;margin-bottom:52px}
+  .works .sec-head h2{color:#fff;font-size:clamp(1.7rem,3.2vw,2.4rem)}
+  .wgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
+  .wcard{cursor:pointer}
+  .wcard .thumb{aspect-ratio:4/3;position:relative;overflow:hidden;margin-bottom:20px}
+  .wcard .thumb .ph{position:absolute;inset:0}
+  .wcard:hover .thumb .ph{transform:scale(1.05)}.wcard .thumb .ph{transition:transform .6s ease}
+  .wcard .cat{font-family:var(--en);font-style:italic;color:#9db8dc;font-size:.95rem}
+  .wcard h3{color:#fff;font-size:1.24rem;letter-spacing:.04em;margin:6px 0 8px}
+  .wcard p{color:rgba(255,255,255,.66);font-size:.88rem;line-height:1.9}
+  @media(max-width:820px){.wgrid{grid-template-columns:1fr;gap:34px}}
+  .morelink{display:inline-flex;align-items:center;gap:12px;font-family:var(--en);font-style:italic;font-size:1.05rem;border-bottom:1px solid currentColor;padding-bottom:4px;transition:gap .25s}
+  .morelink:hover{gap:20px}
+
+  /* 強み */
+  .why .sec-label{display:flex;justify-content:center}
+  .why{text-align:center}
+  .why h2{font-size:clamp(1.7rem,3.2vw,2.4rem);letter-spacing:.05em;margin-bottom:64px}
+  .figs{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .fig{padding:48px 24px;border-right:1px solid var(--line)}
+  .fig:last-child{border-right:0}
+  .fig .n{font-family:var(--mincho);font-weight:700;font-size:clamp(3rem,5vw,4.2rem);line-height:1;letter-spacing:.02em}
+  .fig .n span{font-size:.34em;margin-left:.15em}
+  .fig .en{font-family:var(--en);font-style:italic;color:var(--accent);margin-top:14px;font-size:1rem}
+  .fig .d{color:var(--muted);font-size:.86rem;margin-top:6px}
+  .pts{display:grid;grid-template-columns:repeat(3,1fr);gap:44px;margin-top:64px;text-align:left}
+  .pt .k{font-family:var(--label);font-size:.66rem;letter-spacing:.16em;color:var(--accent);margin-bottom:16px}
+  .pt h4{font-family:var(--mincho);font-weight:700;font-size:1.2rem;letter-spacing:.04em;margin-bottom:12px;line-height:1.6}
+  .pt p{color:var(--ink2);font-size:.92rem;line-height:2}
+  @media(max-width:820px){.figs{grid-template-columns:1fr}.fig{border-right:0;border-bottom:1px solid var(--line)}.fig:last-child{border-bottom:0}.pts{grid-template-columns:1fr;gap:34px;margin-top:48px}}
+
+  /* メッセージ */
+  .message{background:var(--paper2)}
+  .msg-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:64px;align-items:center}
+  .message .ph{aspect-ratio:3/3.6}
+  .message .sec-label{margin-bottom:28px}
+  .message h2{font-size:clamp(1.7rem,3.4vw,2.5rem);line-height:1.7;letter-spacing:.05em;margin-bottom:30px}
+  .message p{color:var(--ink2);font-size:1rem;line-height:2.4;letter-spacing:.03em;margin-bottom:18px}
+  .message .sign{margin-top:32px;font-family:var(--label);font-size:.72rem;letter-spacing:.1em;color:var(--muted)}
+  .message .sign b{font-family:var(--mincho);color:var(--ink);font-size:1.3rem;font-weight:700;letter-spacing:.08em;margin-left:12px}
+  @media(max-width:820px){.msg-grid{grid-template-columns:1fr;gap:36px}.message .ph{aspect-ratio:4/3}}
+
+  /* 採用バナー */
+  .recruit{position:relative;color:#fff;text-align:center;overflow:hidden;padding:150px 0}
+  .recruit .ph{position:absolute;inset:0}
+  .recruit::after{content:"";position:absolute;inset:0;background:rgba(16,24,38,.62)}
+  .recruit .in{position:relative;z-index:3}
+  .recruit .label{justify-content:center;margin-bottom:26px}.recruit .label .jp{color:rgba(255,255,255,.6)}.recruit .label .en{color:#fff}
+  .recruit h2{color:#fff;font-size:clamp(1.9rem,4vw,3rem);line-height:1.6;letter-spacing:.06em;margin-bottom:24px}
+  .recruit p{color:rgba(255,255,255,.85);max-width:520px;margin:0 auto 36px;font-size:.98rem}
+  .btn-line{display:inline-flex;align-items:center;gap:14px;font-family:var(--en);font-style:italic;font-size:1.1rem;color:#fff;border:1px solid rgba(255,255,255,.6);padding:16px 40px;transition:background .3s,color .3s}
+  .btn-line:hover{background:#fff;color:var(--navy)}
+
+  /* 会社概要抜粋 */
+  .company .co-grid{display:grid;grid-template-columns:.8fr 1.2fr;gap:64px}
+  .company h2{font-size:clamp(1.7rem,3.2vw,2.4rem);letter-spacing:.05em;margin-top:20px}
+  .info{width:100%;border-collapse:collapse}
+  .info th,.info td{text-align:left;padding:18px 4px;border-bottom:1px solid var(--line);vertical-align:top;font-size:.92rem}
+  .info th{width:130px;font-family:var(--label);font-size:.68rem;letter-spacing:.1em;color:var(--muted);font-weight:400;white-space:nowrap;padding-top:22px}
+  .info td{color:var(--ink);line-height:1.9}
+  .badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+  .badge{border:1px solid var(--line2);color:var(--ink2);font-family:var(--label);font-size:.72rem;padding:5px 12px}
+  @media(max-width:820px){.company .co-grid{grid-template-columns:1fr;gap:30px}}
+
+  /* コンタクト */
+  .contact{text-align:center;border-top:1px solid var(--line)}
+  .contact .label{justify-content:center;margin-bottom:26px}
+  .contact h2{font-size:clamp(1.9rem,3.6vw,2.7rem);line-height:1.6;letter-spacing:.05em;margin-bottom:22px}
+  .contact p{color:var(--ink2);max-width:520px;margin:0 auto 40px}
+  .contact .row2{display:flex;gap:26px;justify-content:center;align-items:center;flex-wrap:wrap}
+  .contact .tel{font-family:var(--mincho);font-weight:700;font-size:2rem;letter-spacing:.06em}
+  .contact .tel small{display:block;font-family:var(--label);font-size:.68rem;letter-spacing:.1em;color:var(--muted);font-weight:400}
+
+  footer{background:var(--navy);color:rgba(255,255,255,.62);padding:70px 0 34px;font-size:.86rem}
+  .ft-top{display:flex;justify-content:space-between;flex-wrap:wrap;gap:36px;padding-bottom:40px;border-bottom:1px solid rgba(255,255,255,.14)}
+  .ft-brand .nm{font-family:var(--mincho);color:#fff;font-weight:700;font-size:1.3rem;letter-spacing:.08em}
+  .ft-brand p{margin-top:14px;max-width:330px;color:rgba(255,255,255,.55);line-height:1.9}
+  .ft-links{display:flex;gap:56px;flex-wrap:wrap}
+  .ft-links .col b{font-family:var(--en);font-style:italic;color:#fff;font-size:1rem;display:block;margin-bottom:15px}
+  .ft-links .col a{display:block;margin-bottom:11px;color:rgba(255,255,255,.6);transition:color .2s;font-size:.88rem}
+  .ft-links .col a:hover{color:#fff}
+  .copy{margin-top:30px;font-family:var(--label);font-size:.68rem;letter-spacing:.06em;color:rgba(255,255,255,.4);display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+  .reveal{opacity:0;transform:translateY(30px);transition:opacity 1s cubic-bezier(.19,1,.22,1),transform 1s cubic-bezier(.19,1,.22,1)}
+  .reveal.in{opacity:1;transform:none}
+  @media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}}
+  @media(max-width:900px){
+    .menu{position:fixed;inset:0 0 0 auto;width:min(82vw,340px);background:var(--paper);flex-direction:column;justify-content:center;gap:30px;transform:translateX(100%);transition:transform .4s;padding:44px;box-shadow:-10px 0 50px rgba(0,0,0,.12)}
+    .menu.open{transform:none}.menu a{color:var(--ink2)!important;font-size:1rem}
+    .burger{display:flex}.burger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}.burger.open span:nth-child(2){opacity:0}.burger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+    .menu .contact{color:var(--ink)!important}
+  }
+  @media(max-width:520px){section{padding:96px 0}.hero .txt .in{padding:0 24px}.wrap{padding:0 24px}}
+
+  /* ===== A+B インタラクティブヒーロー（波紋が灯していく） ===== */
+  .hero-fx{position:relative;min-height:100vh;display:flex;align-items:center;overflow:hidden;cursor:pointer;background:#0b1526}
+  .hero-fx #fx{position:absolute;inset:0;display:block}
+  .fx-vignette{position:absolute;inset:0;pointer-events:none;background:radial-gradient(1200px 700px at 50% 42%,transparent 40%,rgba(4,8,16,.55) 100%)}
+  .fx-in{position:relative;z-index:5;width:100%;max-width:var(--maxw);margin:0 auto;padding:110px 32px 90px;pointer-events:none}
+  .fx-in .en-eye{font-family:var(--en);font-style:italic;font-size:1.2rem;color:#9db8dc;margin-bottom:24px;opacity:0;animation:fxfade 1.2s ease .8s forwards}
+  .hero-fx h1{color:#fff;font-size:clamp(2.5rem,5.4vw,4.4rem);line-height:1.55;letter-spacing:.06em;text-shadow:0 2px 30px rgba(0,0,0,.35);font-weight:800}
+  .hero-fx h1 .l{display:block;overflow:hidden}
+  .hero-fx h1 .l i{display:inline-block;font-style:normal;transform:translateY(112%);animation:fxrise 1.15s cubic-bezier(.19,1,.22,1) forwards}
+  .hero-fx h1 .l:nth-child(2) i{animation-delay:.16s}
+  .hero-fx .sub{color:rgba(255,255,255,.85);font-weight:300;font-size:clamp(.98rem,1.4vw,1.08rem);letter-spacing:.05em;max-width:460px;margin-top:26px;opacity:0;animation:fxfade 1.2s ease 1.1s forwards}
+  .hero-fx .en-tag{font-family:var(--en);font-style:italic;color:rgba(157,184,220,.9);margin-top:16px;font-size:1.02rem;opacity:0;animation:fxfade 1.2s ease 1.25s forwards}
+  @keyframes fxrise{to{transform:none}}@keyframes fxfade{to{opacity:1}}
+  .fx-hint{position:absolute;z-index:6;left:50%;bottom:96px;transform:translateX(-50%);font-family:var(--label);font-size:.68rem;letter-spacing:.22em;color:rgba(255,255,255,.55);display:flex;align-items:center;gap:10px;pointer-events:none;opacity:0;animation:fxfade 1.4s ease 1.9s forwards}
+  .fx-hint .ring{width:14px;height:14px;border:1px solid rgba(255,255,255,.5);border-radius:50%;position:relative}
+  .fx-hint .ring::after{content:"";position:absolute;inset:-5px;border:1px solid rgba(255,255,255,.25);border-radius:50%;animation:fxhint 2.2s ease-out infinite}
+  @keyframes fxhint{0%{transform:scale(.5);opacity:1}100%{transform:scale(1.5);opacity:0}}
+  .fx-counter{position:absolute;z-index:6;right:32px;bottom:30px;font-family:var(--en);font-style:italic;font-size:.95rem;color:rgba(255,255,255,.6);pointer-events:none}
+  .fx-counter b{color:#ffe7b8;font-style:normal;font-family:var(--label);font-weight:600;font-size:1.05rem}
+  .fx-scroll{position:absolute;left:32px;bottom:30px;z-index:6;font-family:var(--label);font-size:.6rem;letter-spacing:.24em;color:rgba(255,255,255,.6);display:flex;align-items:center;gap:12px;pointer-events:none}
+  .fx-scroll .bar{width:1px;height:46px;background:#fff;opacity:.5;animation:cue 2.6s ease-in-out infinite}
+  @media(prefers-reduced-motion:reduce){.hero-fx h1 .l i{animation:none;transform:none}.fx-in .en-eye,.hero-fx .sub,.hero-fx .en-tag,.fx-hint{animation:none;opacity:1}.fx-hint .ring::after,.fx-scroll .bar{animation:none}}
+  @media(max-width:520px){.fx-in{padding:120px 24px 110px}.fx-hint{bottom:88px;width:max-content}}
+
+</style>
+</head>
+<body>
+<div id="loader"><div class="lg">河口電機</div></div>
+
+<header id="hdr"><div class="wrap nav">
+  <a href="index.html" class="brand"><span class="mk"><svg viewBox="0 0 40 40"><path d="M22 5 L11 23 H19 L16 35 L30 15 H21 Z" fill="none" stroke="#274e79" stroke-width="1.6" stroke-linejoin="round"/></svg></span><span class="nm">河口電機<small>KAWAGUCHI DENKI</small></span></a>
+  <nav class="menu" id="menu">
+    <a href="index.html#statement"><span class="en">Concept</span></a>
+    <a href="services.html"><span class="en">Business</span></a>
+    <a href="works.html"><span class="en">Works</span></a>
+    <a href="company.html"><span class="en">Company</span></a>
+    <a href="recruit.html"><span class="en">Recruit</span></a>
+    <a href="contact.html" class="contact">Contact</a>
+  </nav>
+  <button class="burger" id="burger" aria-label="メニュー"><span></span><span></span><span></span></button>
+</div></header>
+
+<section class="hero-fx" id="top">
+  <canvas id="fx" aria-hidden="true"></canvas>
+  <div class="fx-vignette"></div>
+  <div class="fx-in">
+    <div class="en-eye">Concept</div>
+    <h1><span class="l"><i>まちの明かりを、</i></span><span class="l"><i>絶やさない。</i></span></h1>
+    <p class="sub">スイッチひとつで明かりが灯る。その"あたりまえ"を、見えないところで支えつづける。岐阜のまちに、1988年から。</p>
+    <p class="en-tag">Keeping the town alight, since 1988.</p>
+  </div>
+  <div class="fx-hint"><span class="ring"></span>クリック — 波紋が、まちを灯していく</div>
+  <div class="fx-counter"><span id="cnt"><b>0</b> / <span id="tot">0</span> lights</span></div>
+  <div class="fx-scroll"><span class="bar"></span>SCROLL</div>
+</section>
+
+<section class="statement" id="statement"><div class="wrap in">
+  <div class="sec-label label"><span class="en">Concept</span><span class="jp">私たちの考え</span></div>
+  <p class="lead reveal">見えないところで、<br>まちの毎日を支えている。</p>
+  <p class="body reveal">スイッチを入れれば、明かりが灯る。ボタンを押せば、機械が動く。あたりまえに思えるその一瞬の裏側には、確かな設計と、丁寧な施工と、絶やさないための保守があります。<br>河口電機は1988年の創業以来、岐阜のまちで電気設備と向き合ってきました。住宅の一室から、工場の受変電設備、公共施設の大規模改修まで。人の暮らしと事業の"あたりまえ"を、静かに、確かに支えつづけること。それが私たちの仕事です。</p>
+</div></section>
+
+<section class="biz" id="biz"><div class="wrap">
+  <div class="sec-label label reveal"><span class="en">Business</span><span class="jp">事業</span></div>
+  <div class="sec-head reveal"><h2>電気設備の設計・施工・保守を、<br class="thin">一貫して。</h2><p class="note">住宅から公共施設まで。暮らしと事業を支える、幅広い電気工事に対応します。</p></div>
+
+  <div class="row reveal"><div class="no">01</div><div class="body"><div class="en">Residential &amp; General</div><h3>住宅・一般電気工事</h3><p>暮らしのすぐそばにある、配線と明かり。新築・リフォームを問わず、住宅・オフィス・店舗の電気設備を、細やかな配慮で仕上げます。</p></div><div class="thumb"><div class="ph"><span class="glyph"></span></div></div></div>
+
+  <div class="row reveal"><div class="no">02</div><div class="body"><div class="en">Power Receiving</div><h3>高圧・低圧受電設備</h3><p>事業を止めない、電力の心臓部。工場や公共施設のキュービクル等、受変電設備の設計・施工を、確かな技術で担います。</p></div><div class="thumb"><div class="ph"><span class="glyph"></span></div></div></div>
+
+  <div class="row reveal"><div class="no">03</div><div class="body"><div class="en">Lighting &amp; LED</div><h3>照明・LED化改修</h3><p>明るさと省エネを、両立する。照明器具の設置・更新から、公共施設の大規模なLED化改修工事まで幅広く手がけます。</p></div><div class="thumb"><div class="ph"><span class="glyph"></span></div></div></div>
+
+  <div class="row reveal"><div class="no">04</div><div class="body"><div class="en">Air Conditioning</div><h3>空調設備工事</h3><p>快適な空気を、つくる。業務用から家庭用まで、空調設備の設置・更新に対応し、心地よい室内環境を整えます。</p></div><div class="thumb"><div class="ph"><span class="glyph"></span></div></div></div>
+
+  <div class="row reveal"><div class="no">05</div><div class="body"><div class="en">Fire &amp; Safety</div><h3>消防・防災設備</h3><p>もしもの時に、確かに働く。自動火災報知設備など、建物の安全を守る設備を、消防設備士（甲種）が施工します。</p></div><div class="thumb"><div class="ph"><span class="glyph"></span></div></div></div>
+
+  <div class="row reveal"><div class="no">06</div><div class="body"><div class="en">Design &amp; Management</div><h3>設計・施工管理</h3><p>図面から現場まで、一貫して。公共工事の入札案件にも対応し、一級電気工事施工管理技士がプロジェクトを最後まで推進します。</p></div><div class="thumb"><div class="ph"><span class="glyph"></span></div></div></div>
+</div></section>
+
+<section class="works" id="works"><div class="wrap">
+  <div class="sec-label label reveal"><span class="en">Works</span><span class="jp">施工実績</span></div>
+  <div class="sec-head reveal"><h2>まちのあちこちに、<br class="thin">私たちの仕事があります。</h2><a href="works.html" class="morelink">View all works →</a></div>
+  <div class="wgrid">
+    <div class="wcard reveal"><div class="thumb"><div class="ph"><div class="grain"></div><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="5" width="18" height="14" rx="1"/><circle cx="8.5" cy="10" r="1.6"/><path d="M21 16l-5-4-8 7"/></svg>写真</span></div></div><div class="cat">LED Renovation</div><h3>県営住宅 LED化改修工事</h3><p>共用部照明のLED化による省エネ改修。約79百万円規模の長期プロジェクト。</p></div>
+    <div class="wcard reveal"><div class="thumb"><div class="ph"><div class="grain"></div><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="5" width="18" height="14" rx="1"/><circle cx="8.5" cy="10" r="1.6"/><path d="M21 16l-5-4-8 7"/></svg>写真</span></div></div><div class="cat">Power Facility</div><h3>工場 高圧受変電設備工事</h3><p>キュービクル更新による、安定した電力供給の実現。</p></div>
+    <div class="wcard reveal"><div class="thumb"><div class="ph"><div class="grain"></div><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><rect x="3" y="5" width="18" height="14" rx="1"/><circle cx="8.5" cy="10" r="1.6"/><path d="M21 16l-5-4-8 7"/></svg>写真</span></div></div><div class="cat">Road Lighting</div><h3>橋梁 照明灯補修工事</h3><p>道路維持に関わる、照明設備の補修・更新工事。</p></div>
+  </div>
+</div></section>
+
+<section class="why" id="why"><div class="wrap">
+  <div class="sec-label label reveal"><span class="en">Why us</span><span class="jp">選ばれる理由</span></div>
+  <h2 class="reveal">数字が語る、37年の信頼。</h2>
+  <div class="figs reveal">
+    <div class="fig"><div class="n">37<span>年</span></div><div class="en">Since 1988</div><div class="d">岐阜のまちと歩んだ年月</div></div>
+    <div class="fig"><div class="n">10<span>名</span></div><div class="en">Certified</div><div class="d">電気工事の有資格者</div></div>
+    <div class="fig"><div class="n">般-3</div><div class="en">Licensed</div><div class="d">岐阜県知事 建設業許可</div></div>
+  </div>
+  <div class="pts">
+    <div class="pt reveal"><div class="k">01 — TRUST</div><h4>公共工事で積んだ信頼</h4><p>岐阜市・岐阜県の電気設備改修をはじめ、公共施設の施工を数多く手がけ、入札案件で実績を重ねてきました。</p></div>
+    <div class="pt reveal"><div class="k">02 — ONE-STOP</div><h4>設計から保守まで一貫</h4><p>約20の現場を同時に管理する体制。設計・施工・保守までを一社で担い、長くお付き合いいただけます。</p></div>
+    <div class="pt reveal"><div class="k">03 — SKILL</div><h4>有資格者による確かな技術</h4><p>一級電気工事施工管理技士3名、第一種電気工事士5名ほか。確かな資格と経験が、品質を支えます。</p></div>
+  </div>
+</div></section>
+
+<section class="message" id="message"><div class="wrap msg-grid">
+  <div class="ph reveal"><div class="grain"></div><span class="glyph"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.5 3.5-7 8-7s8 2.5 8 7"/></svg>代表者の写真</span></div>
+  <div class="reveal">
+    <div class="sec-label label"><span class="en">Message</span><span class="jp">代表挨拶</span></div>
+    <h2>誠意・技術・責任感を、<br>いつも胸に。</h2>
+    <p>弊社のサイトをご覧いただき、ありがとうございます。長年、建築の現場に携わるなかで、私が何より大切にしてきたのは、誠意をもって人と向き合うこと。卓越した技術を、磨きつづけること。そして、最後まで責任を持ってやり遂げること。</p>
+    <p>電気は、暮らしと事業のもっとも身近な土台です。その土台を確かに支える一社であるために、これからも一つひとつの現場に、真摯に向き合ってまいります。</p>
+    <div class="sign">代表取締役<b>河口 安男</b></div>
+  </div>
+</div></section>
+
+<section class="recruit" id="recruit"><div class="ph"><div class="grain"></div><span class="glyph"></span></div><div class="wrap in">
+  <div class="sec-label label"><span class="en">Recruit</span><span class="jp">採用情報</span></div>
+  <h2>電気で、まちを支える人になる。</h2>
+  <p>未経験からでも、資格取得を会社が支援します。地域のインフラを支える、確かな手ごたえのある仕事。あなたの成長を、会社全体で応援します。</p>
+  <a href="recruit.html" class="btn-line">Join our team →</a>
+</div></section>
+
+<section class="company" id="company"><div class="wrap co-grid">
+  <div class="reveal"><div class="sec-label label"><span class="en">Company</span><span class="jp">会社案内</span></div><h2>会社概要</h2></div>
+  <div class="reveal"><table class="info">
+    <tr><th>会社名</th><td>河口電機株式会社</td></tr>
+    <tr><th>代表者</th><td>代表取締役　河口 安男</td></tr>
+    <tr><th>設立</th><td>1988年11月8日</td></tr>
+    <tr><th>資本金</th><td>10,000,000円</td></tr>
+    <tr><th>所在地</th><td>本店：〒501-6121 岐阜県岐阜市柳津町下佐波2丁目96番地<br>本社：〒500-8285 岐阜県岐阜市南鶉6丁目40-3</td></tr>
+    <tr><th>連絡先</th><td>TEL 058-275-4141 ／ FAX 058-275-4133</td></tr>
+    <tr><th>事業内容</th><td>住宅配線／一般配線／空調工事／設計施工</td></tr>
+    <tr><th>建設業許可</th><td>岐阜県知事許可（般-3）第16062号</td></tr>
+    <tr><th>保有資格</th><td><div class="badges"><span class="badge">一級電気施工管理技士 ×3</span><span class="badge">第一種電気工事士 ×5</span><span class="badge">消防設備士 甲種 ×1</span></div></td></tr>
+  </table></div>
+</div></section>
+
+<section class="contact" id="contact"><div class="wrap">
+  <div class="sec-label label"><span class="en">Contact</span><span class="jp">お問い合わせ</span></div>
+  <h2>電気工事のご相談は、<br>お気軽にどうぞ。</h2>
+  <p>ご質問・ご相談・お見積もりのご依頼など、下記より承ります。土・日・祝を除く3営業日以内にご連絡いたします。</p>
+  <div class="row2"><a href="contact.html" class="btn-line" style="color:var(--navy);border-color:var(--line2)">お問い合わせフォーム →</a><div class="tel">058-275-4141<small>受付 平日 8:00–17:00</small></div></div>
+</div></section>
+
+<footer><div class="wrap">
+  <div class="ft-top">
+    <div class="ft-brand"><div class="nm">河口電機株式会社</div><p>岐阜市を拠点とする電気設備工事・空調設備工事の専門企業。設計から施工、保守まで一貫して対応します。</p></div>
+    <div class="ft-links">
+      <div class="col"><b>Business</b><a href="services.html">住宅・一般電気工事</a><a href="services.html">高圧・低圧受電設備</a><a href="services.html">照明・LED化改修</a><a href="services.html">空調設備工事</a></div>
+      <div class="col"><b>Company</b><a href="index.html#statement">私たちの考え</a><a href="works.html">施工実績</a><a href="company.html">会社概要</a><a href="recruit.html">採用情報</a></div>
+      <div class="col"><b>Contact</b><a href="contact.html">お問い合わせ</a><a href="tel:0582754141">058-275-4141</a></div>
+    </div>
+  </div>
+  <div class="copy"><span>© 2026 KAWAGUCHI DENKI Co., Ltd.</span><span>岐阜県知事許可（般-3）第16062号</span></div>
+</div></footer>
+
+<script>
+(function(){
+  var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var canvas=document.getElementById('fx');if(!canvas)return;
+  var hero=document.querySelector('.hero-fx');
+  var ctx=canvas.getContext('2d');
+  var cntEl=document.getElementById('cnt'),totEl=document.getElementById('tot');
+  var W,H,DPR,windows=[],lamps=[],skyline=[],litCount=0;
+  function buildTown(){
+    windows=[];lamps=[];skyline=[];litCount=0;
+    var ground=H*0.86,x=-20;
+    while(x<W+40){
+      var bw=30+Math.random()*70,bh=40+Math.random()*Math.min(150,H*0.22);
+      skyline.push({x:x,y:ground-bh,w:bw,h:bh});
+      var cols=Math.max(1,Math.floor(bw/16)),rows=Math.max(1,Math.floor(bh/20));
+      for(var c=0;c<cols;c++)for(var r=0;r<rows;r++){
+        if(Math.random()<0.5)windows.push({x:x+8+c*16,y:ground-bh+10+r*20,lit:0,target:0,flick:.06+Math.random()*.12,phase:Math.random()*6.28});
+      }
+      x+=bw+6+Math.random()*26;
+    }
+    for(var i=0;i<Math.floor(W/180);i++)lamps.push({x:60+i*180+Math.random()*60,y:ground,lit:0,target:0});
+    windows.forEach(function(w){if(Math.random()<0.15){w.target=1;w.lit=1;}});
+    litCount=windows.filter(function(w){return w.target>0}).length;
+    totEl.textContent=windows.length;updateCnt();
+  }
+  function updateCnt(){cntEl.innerHTML='<b>'+litCount+'</b> / '+windows.length+' lights';}
+  function size(){DPR=Math.min(devicePixelRatio||1,2);W=hero.clientWidth;H=hero.clientHeight;canvas.width=W*DPR;canvas.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);buildTown();}
+  size();addEventListener('resize',size);
+  var ripples=[],sparks=[],pointer={x:-999,y:-999,px:-999,py:-999,moved:0};
+  function addRipple(x,y){
+    for(var i=0;i<3;i++)ripples.push({x:x,y:y,r:2+i*10,v:2.5-i*.35,life:1,max:Math.max(W,H)*.45,warm:i%2===0});
+    for(var j=0;j<14;j++){var a=Math.random()*6.283,sp=.4+Math.random()*1.5;sparks.push({x:x,y:y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-.3,life:1,size:.8+Math.random()*1.8,warm:Math.random()<.7});}
+    if(sparks.length>240)sparks.splice(0,sparks.length-240);
+    if(ripples.length>36)ripples.splice(0,ripples.length-36);
+  }
+  function pos(e){var r=canvas.getBoundingClientRect();var t=e.touches?e.touches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top};}
+  hero.addEventListener('pointerdown',function(e){var p=pos(e);addRipple(p.x,p.y);});
+  hero.addEventListener('pointermove',function(e){
+    var p=pos(e);pointer.px=pointer.x;pointer.py=pointer.y;pointer.x=p.x;pointer.y=p.y;
+    var dx=pointer.x-pointer.px,dy=pointer.y-pointer.py,d=Math.hypot(dx,dy);
+    if(d>3&&pointer.px>-500){pointer.moved+=d;
+      if(pointer.moved>10){pointer.moved=0;sparks.push({x:p.x,y:p.y,vx:dx*.06+(Math.random()-.5)*.5,vy:dy*.06-(.2+Math.random()*.5),life:1,size:.8+Math.random()*1.4,warm:Math.random()<.6});if(sparks.length>240)sparks.splice(0,sparks.length-240);}}
+  },{passive:true});
+  hero.addEventListener('touchstart',function(e){var p=pos(e);addRipple(p.x,p.y);},{passive:true});
+  function bg(){var g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#0a1322');g.addColorStop(.55,'#0e1a2e');g.addColorStop(1,'#101d33');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);ctx.fillStyle='rgba(200,215,240,.25)';for(var i=0;i<40;i++){ctx.fillRect((i*97)%W,((i*61)%Math.floor(H*.5)),1,1);}}
+  function town(t){
+    var ground=H*0.86;ctx.fillStyle='#0a1120';
+    skyline.forEach(function(b){ctx.fillRect(b.x,b.y,b.w,b.h)});
+    ctx.fillStyle='#080e1a';ctx.fillRect(0,ground,W,H-ground);
+    windows.forEach(function(w){
+      if(w.target>0&&w.lit<1)w.lit=Math.min(1,w.lit+.05);
+      if(w.lit<=0)return;
+      var a=w.lit*(0.62+Math.sin(t*.0011+w.phase)*w.flick);
+      ctx.fillStyle='rgba(242,207,141,'+Math.min(.9,Math.max(0,a))+')';
+      ctx.fillRect(w.x,w.y,5,7);
+      if(w.lit>0&&w.lit<1){var g=ctx.createRadialGradient(w.x+2,w.y+3,0,w.x+2,w.y+3,14);g.addColorStop(0,'rgba(255,231,184,'+(0.5*(1-w.lit))+')');g.addColorStop(1,'rgba(255,231,184,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(w.x+2,w.y+3,14,0,7);ctx.fill();}
+    });
+    lamps.forEach(function(l){
+      ctx.strokeStyle='rgba(120,140,170,.5)';ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.moveTo(l.x,l.y);ctx.lineTo(l.x,l.y-34);ctx.stroke();
+      if(l.target>0&&l.lit<1)l.lit=Math.min(1,l.lit+.04);
+      if(l.lit>0){var g=ctx.createRadialGradient(l.x,l.y-36,0,l.x,l.y-36,26);g.addColorStop(0,'rgba(255,231,184,'+(.8*l.lit)+')');g.addColorStop(1,'rgba(255,231,184,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(l.x,l.y-36,26,0,7);ctx.fill();ctx.fillStyle='rgba(255,231,184,'+l.lit+')';ctx.beginPath();ctx.arc(l.x,l.y-36,2,0,7);ctx.fill();}
+    });
+  }
+  function drawRipples(){
+    for(var i=ripples.length-1;i>=0;i--){
+      var p=ripples[i];p.r+=p.v;p.v*=.995;p.life=1-(p.r/p.max);
+      if(p.life<=0){ripples.splice(i,1);continue;}
+      var a=Math.max(0,p.life)*.5,col=p.warm?'242,207,141':'157,184,220';
+      ctx.strokeStyle='rgba('+col+','+a+')';ctx.lineWidth=1.4;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.stroke();
+      if(p.life>.5){ctx.strokeStyle='rgba('+col+','+(a*.4)+')';ctx.beginPath();ctx.arc(p.x,p.y,p.r*.86,0,7);ctx.stroke();}
+      windows.forEach(function(w){if(w.target===0){var d=Math.hypot(w.x-p.x,w.y-p.y);if(Math.abs(d-p.r)<10){w.target=1;litCount++;updateCnt();}}});
+      lamps.forEach(function(l){if(l.target===0){var d=Math.hypot(l.x-p.x,(l.y-36)-p.y);if(Math.abs(d-p.r)<12)l.target=1;}});
+    }
+  }
+  function drawSparks(){
+    for(var i=sparks.length-1;i>=0;i--){
+      var s=sparks[i];s.x+=s.vx;s.y+=s.vy;s.vy-=.004;s.life-=.012;
+      if(s.life<=0){sparks.splice(i,1);continue;}
+      var col=s.warm?'255,231,184':'157,184,220';
+      var g=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,s.size*4);
+      g.addColorStop(0,'rgba('+col+','+(s.life*.8)+')');g.addColorStop(1,'rgba('+col+',0)');
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(s.x,s.y,s.size*4,0,7);ctx.fill();
+      ctx.fillStyle='rgba(255,255,255,'+(s.life*.85)+')';ctx.beginPath();ctx.arc(s.x,s.y,s.size*.7,0,7);ctx.fill();
+    }
+  }
+  function frame(t){bg();town(t);drawRipples();drawSparks();requestAnimationFrame(frame);}
+  if(!reduce){requestAnimationFrame(frame);setTimeout(function(){addRipple(W*.62,H*.58)},1700);}
+  else{windows.forEach(function(w){w.lit=w.target=1});lamps.forEach(function(l){l.lit=l.target=1});bg();town(0);litCount=windows.length;updateCnt();}
+})();
+</script>
+<script>
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  addEventListener('load',()=>{const l=document.getElementById('loader');setTimeout(()=>l.classList.add('gone'),reduce?0:900);});
+  const hdr=document.getElementById('hdr');const onScroll=()=>hdr.classList.toggle('solid',scrollY>60);onScroll();addEventListener('scroll',onScroll,{passive:true});
+  const burger=document.getElementById('burger'),menu=document.getElementById('menu');
+  burger.addEventListener('click',()=>{burger.classList.toggle('open');menu.classList.toggle('open')});
+  menu.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{burger.classList.remove('open');menu.classList.remove('open')}));
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.14});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>
