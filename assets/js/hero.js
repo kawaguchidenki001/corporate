@@ -33,10 +33,16 @@
     brightL=layer();var b=brightL.getContext('2d');b.setTransform(DPR,0,0,DPR,0,0);
     b.drawImage(photo,dx,dy,dw,dh);
 
-    /* 消灯状態: 写真を落ち着いた夜の暗さに */
+    /* 消灯状態: 写真を落ち着いた夜の暗さに。見出し側（左）と空（上）は少し強めに沈める */
     staticL=layer();var s=staticL.getContext('2d');s.setTransform(DPR,0,0,DPR,0,0);
     s.drawImage(photo,dx,dy,dw,dh);
-    s.fillStyle='rgba(7,11,21,.74)';s.fillRect(0,0,W,H);
+    s.fillStyle='rgba(6,10,20,.58)';s.fillRect(0,0,W,H);
+    var lg=s.createLinearGradient(0,0,W*0.66,0);
+    lg.addColorStop(0,'rgba(5,9,18,.5)');lg.addColorStop(1,'rgba(5,9,18,0)');
+    s.fillStyle=lg;s.fillRect(0,0,W,H);
+    var tg=s.createLinearGradient(0,0,0,H*0.5);
+    tg.addColorStop(0,'rgba(5,9,18,.5)');tg.addColorStop(1,'rgba(5,9,18,0)');
+    s.fillStyle=tg;s.fillRect(0,0,W,H);
 
     /* 灯った明かりの焼き込み先（最初は透明） */
     litL=layer();litCtx=litL.getContext('2d');litCtx.setTransform(DPR,0,0,DPR,0,0);
@@ -51,32 +57,40 @@
     try{data=dctx.getImageData(0,0,dc.width,dc.height).data;}
     catch(e){data=null;} /* 万一CORSで読めない写真なら描画モードへ戻す */
     if(!data){photoMode=false;buildTown();return;}
-    /* しきい値は写真ごとに自動調整: 全画素の輝度分布から「最も明るい上位1.5%」を明かりとみなす */
-    var hist=new Array(256),hi;for(hi=0;hi<256;hi++)hist[hi]=0;
-    var n=0,y,x,o,lum;
-    for(y=1;y<dc.height-1;y++)for(x=1;x<dc.width-1;x++){
-      o=(y*dc.width+x)*4;
-      lum=data[o]*.2126+data[o+1]*.7152+data[o+2]*.0722;
-      hist[lum|0]++;n++;
+    /* 明かりの検出（局所コントラスト方式）:
+       「周囲の平均よりはっきり明るい点」だけを拾う。これにより、面としてなだらかに
+       明るい夕焼け空は除外され、市街の窓明かり・街灯だけが灯りとして検出される。
+       高速化のため積分画像（Summed-Area Table）で局所平均を求める。 */
+    var w0=dc.width,h0=dc.height,y,x,o;
+    var L=new Float32Array(w0*h0);
+    for(y=0;y<h0;y++)for(x=0;x<w0;x++){o=(y*w0+x)*4;L[y*w0+x]=data[o]*.2126+data[o+1]*.7152+data[o+2]*.0722;}
+    var iw=w0+1,I=new Float64Array(iw*(h0+1));
+    for(y=1;y<=h0;y++){var rs=0;for(x=1;x<=w0;x++){rs+=L[(y-1)*w0+(x-1)];I[y*iw+x]=I[(y-1)*iw+x]+rs;}}
+    function boxAvg(cx,cy,rr){
+      var x0=cx-rr<0?0:cx-rr,y0=cy-rr<0?0:cy-rr,x1=cx+rr+1>w0?w0:cx+rr+1,y1=cy+rr+1>h0?h0:cy+rr+1;
+      return (I[y1*iw+x1]-I[y0*iw+x1]-I[y1*iw+x0]+I[y0*iw+x0])/((x1-x0)*(y1-y0));
     }
-    var acc=0,thr=200;
-    for(var v=255;v>=0;v--){acc+=hist[v];if(acc>=n*0.015){thr=v;break;}}
-    thr=Math.max(110,Math.min(200,thr));
-    var cand=[];
-    for(y=1;y<dc.height-1;y++)for(x=1;x<dc.width-1;x++){
-      o=(y*dc.width+x)*4;
-      lum=data[o]*.2126+data[o+1]*.7152+data[o+2]*.0722;
-      if(lum>thr)cand.push({x:x,y:y,l:lum});
+    var R=Math.max(3,Math.round(w0*0.014)),cand=[];
+    for(y=1;y<h0-1;y++)for(x=1;x<w0-1;x++){
+      var lv=L[y*w0+x];
+      if(lv<55)continue;                                   /* 暗すぎる */
+      var bg=boxAvg(x,y,R);
+      if(bg>140)continue;                                  /* 周囲が明るい＝空の中 → 除外 */
+      var contrast=lv-bg;
+      if(contrast<24)continue;                             /* 周囲と差が無い＝面 → 除外 */
+      if(lv<L[y*w0+x-1]||lv<L[y*w0+x+1]||lv<L[(y-1)*w0+x]||lv<L[(y+1)*w0+x])continue; /* 局所最大のみ */
+      cand.push({x:x,y:y,s:contrast});
     }
-    cand.sort(function(a,b){return b.l-a.l});
-    var occ={},cell=5;
-    for(var i=0;i<cand.length&&windows.length<650;i++){
+    cand.sort(function(a,b){return b.s-a.s});
+    var occ={},cell=4;
+    for(var i=0;i<cand.length&&windows.length<600;i++){
       var q=cand[i],cx=(q.x/cell)|0,cy=(q.y/cell)|0,ok=true;
       for(var oy=-1;oy<=1&&ok;oy++)for(var ox=-1;ox<=1;ox++){if(occ[(cx+ox)+'_'+(cy+oy)]){ok=false;break;}}
       if(!ok)continue;
       occ[cx+'_'+cy]=1;
-      windows.push({x:q.x/ds,y:q.y/ds,r:7+Math.min(9,Math.max(0,(q.l-thr))/10),lit:0,target:0,sprite:null});
+      windows.push({x:q.x/ds,y:q.y/ds,r:6+Math.min(8,q.s/8),lit:0,target:0,sprite:null});
     }
+    if(windows.length<40){photoMode=false;buildTown();return;} /* 検出できない写真は描画モードへ */
 
     /* 初期点灯（約15%）: 真っ暗にしない */
     for(i=0;i<windows.length;i++){
