@@ -31,23 +31,30 @@ sitemap.xml / robots.txt
 2. **Source: Deploy from a branch** / **Branch: main（または公開用ブランチ）/ (root)** を選んで Save
 3. 数分待つと公開されます
 
-> **⚠ 公開直後の確認について**
-> リポジトリに `CNAME` ファイルがあるため、Pages の Custom domain に `kawaguchi-denki.com` が自動設定され、
-> `kawaguchidenki001.github.io/corporate` へのアクセスは独自ドメインへリダイレクトされます。
-> **DNS 切替前に github.io の URL で確認したい場合**は、Settings → Pages の「Custom domain」を一旦空にして Save してください
-> （ドメイン切替のタイミングで `kawaguchi-denki.com` を再入力すれば元に戻ります）。
+公開後は `https://kawaguchidenki001.github.io/corporate/` で全ページを確認できます。
+
+> **⚠ `CNAME` ファイルは DNS 切替の当日まで置かないこと**
+> リポジトリに `CNAME`（内容 `kawaguchi-denki.com`）を置くと、GitHub Pages は
+> github.io へのアクセスを独自ドメインへリダイレクトし、さらに DNS がまだ GitHub を
+> 指していない段階ではドメイン検証に失敗して**デプロイ自体がエラーになります**。
+> そのため本リポジトリでは `CNAME` を同梱していません。独自ドメインは下記「DNS 切替」の
+> 手順で、切替当日に設定します（そのとき GitHub が `CNAME` ファイルを自動作成します）。
 
 ### 独自ドメイン切替（DNS）
 
-ドメイン側（kawaguchi-denki.com の DNS）で以下を設定します。
+**サイトの確認がすべて済んでから**行ってください（切替と同時に旧サイトから新サイトへ切り替わります）。
 
-| 種別 | ホスト | 値 |
-|---|---|---|
-| A | @ | 185.199.108.153 / 185.199.109.153 / 185.199.110.153 / 185.199.111.153（4件） |
-| CNAME | www | kawaguchidenki001.github.io |
+1. ドメイン側（kawaguchi-denki.com の DNS）で以下を設定します。
 
-設定後、Settings → Pages の Custom domain に `kawaguchi-denki.com` を入力し、
-「Enforce HTTPS」に必ずチェックを入れてください（証明書発行に最大24時間ほどかかることがあります）。
+   | 種別 | ホスト | 値 |
+   |---|---|---|
+   | A | @ | 185.199.108.153 / 185.199.109.153 / 185.199.110.153 / 185.199.111.153（4件） |
+   | CNAME | www | kawaguchidenki001.github.io |
+
+2. Settings → Pages の **Custom domain** に `kawaguchi-denki.com` を入力して Save
+   （これで GitHub が `CNAME` ファイルをリポジトリに自動作成します）。
+3. 「DNS check successful」の緑チェックが出るのを待ち、**Enforce HTTPS** にチェックを入れます
+   （証明書発行に最大24時間ほどかかることがあります）。
 
 ## フォームの本稼働（GAS接続）
 
