@@ -13,7 +13,7 @@
   var ctx=canvas.getContext('2d');
   var cntEl=document.getElementById('cnt'),totEl=document.getElementById('tot');
   var W,H,DPR,windows=[],lamps=[],beacons=[],litCount=0,staticL=null;
-  var photo=null,photoMode=false,brightL=null,litL=null,litCtx=null;
+  var photo=null,photoDay=null,photoMode=false,timelapse=false,transStart=0,PROG=0,brightL=null,litL=null,litCtx=null,scrimL=null;
   /* コア数の少ない端末は最初から低解像度で開始（描画負荷を1/4に） */
   var degraded=!!(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4);
   /* 光のグラデーションは毎フレーム作らず、事前に1枚のスプライトにしておく（低速機対策） */
@@ -33,16 +33,32 @@
     brightL=layer();var b=brightL.getContext('2d');b.setTransform(DPR,0,0,DPR,0,0);
     b.drawImage(photo,dx,dy,dw,dh);
 
-    /* 消灯状態: 写真を落ち着いた夜の暗さに。見出し側（左）と空（上）は少し強めに沈める */
+    timelapse=!!photoDay;
     staticL=layer();var s=staticL.getContext('2d');s.setTransform(DPR,0,0,DPR,0,0);
-    s.drawImage(photo,dx,dy,dw,dh);
-    s.fillStyle='rgba(6,10,20,.58)';s.fillRect(0,0,W,H);
-    var lg=s.createLinearGradient(0,0,W*0.66,0);
-    lg.addColorStop(0,'rgba(5,9,18,.5)');lg.addColorStop(1,'rgba(5,9,18,0)');
-    s.fillStyle=lg;s.fillRect(0,0,W,H);
-    var tg=s.createLinearGradient(0,0,0,H*0.5);
-    tg.addColorStop(0,'rgba(5,9,18,.5)');tg.addColorStop(1,'rgba(5,9,18,0)');
-    s.fillStyle=tg;s.fillRect(0,0,W,H);
+    if(timelapse){
+      /* タイムラプスの開始フレーム: 昼のまち */
+      var iw2=photoDay.naturalWidth,ih2=photoDay.naturalHeight;
+      var sc2=Math.max(W/iw2,H/ih2),dw2=iw2*sc2,dh2=ih2*sc2,dx2=(W-dw2)/2,dy2=(H-dh2)/2;
+      s.drawImage(photoDay,dx2,dy2,dw2,dh2);
+      /* 昼のあいだ白い見出しを守る陰り（夜が深まるにつれて消える） */
+      scrimL=layer();var sg=scrimL.getContext('2d');sg.setTransform(DPR,0,0,DPR,0,0);
+      var g1=sg.createLinearGradient(0,0,W*0.68,0);
+      g1.addColorStop(0,'rgba(9,14,26,.66)');g1.addColorStop(1,'rgba(9,14,26,0)');
+      sg.fillStyle=g1;sg.fillRect(0,0,W,H);
+      var g2=sg.createLinearGradient(0,0,0,H*0.55);
+      g2.addColorStop(0,'rgba(9,14,26,.5)');g2.addColorStop(1,'rgba(9,14,26,0)');
+      sg.fillStyle=g2;sg.fillRect(0,0,W,H);
+    }else{
+      /* 消灯状態: 写真を落ち着いた夜の暗さに。見出し側（左）と空（上）は少し強めに沈める */
+      s.drawImage(photo,dx,dy,dw,dh);
+      s.fillStyle='rgba(6,10,20,.58)';s.fillRect(0,0,W,H);
+      var lg=s.createLinearGradient(0,0,W*0.66,0);
+      lg.addColorStop(0,'rgba(5,9,18,.5)');lg.addColorStop(1,'rgba(5,9,18,0)');
+      s.fillStyle=lg;s.fillRect(0,0,W,H);
+      var tg=s.createLinearGradient(0,0,0,H*0.5);
+      tg.addColorStop(0,'rgba(5,9,18,.5)');tg.addColorStop(1,'rgba(5,9,18,0)');
+      s.fillStyle=tg;s.fillRect(0,0,W,H);
+    }
 
     /* 灯った明かりの焼き込み先（最初は透明） */
     litL=layer();litCtx=litL.getContext('2d');litCtx.setTransform(DPR,0,0,DPR,0,0);
@@ -92,9 +108,22 @@
     }
     if(windows.length<40){photoMode=false;buildTown();return;} /* 検出できない写真は描画モードへ */
 
-    /* 初期点灯（約15%）: 真っ暗にしない */
-    for(i=0;i<windows.length;i++){
-      if(Math.random()<0.15){var w=windows[i];w.target=1;w.lit=1;stampLit(w);litCount++;}
+    if(timelapse){
+      /* 点灯時刻の割り当て: 近所の明かりがまとまって灯るよう、種点の時刻を継承 */
+      var seeds=[],si;
+      for(si=0;si<24;si++)seeds.push({x:Math.random()*W,y:Math.random()*H,t:0.30+0.60*Math.random()});
+      for(i=0;i<windows.length;i++){
+        var wi=windows[i],best=1e18,bt=0.6;
+        for(si=0;si<seeds.length;si++){var sd=seeds[si],ddx=sd.x-wi.x,ddy=sd.y-wi.y,dd=ddx*ddx+ddy*ddy;if(dd<best){best=dd;bt=sd.t;}}
+        wi.onT=Math.min(0.97,Math.max(0.26,bt+(Math.random()-0.5)*0.12));
+      }
+      var hint=document.querySelector('.fx-hint');if(hint)hint.style.display='none';
+      transStart=0;PROG=0; /* 開始時刻は「ページ読み込み完了+2.2秒」に描画側で確定（ローダー明けに昼を一拍見せる） */
+    }else{
+      /* 初期点灯（約15%）: 真っ暗にしない */
+      for(i=0;i<windows.length;i++){
+        if(Math.random()<0.15){var w=windows[i];w.target=1;w.lit=1;stampLit(w);litCount++;}
+      }
     }
     totEl.textContent=windows.length;updateCnt();
   }
@@ -116,11 +145,27 @@
     w.sprite=null;
   }
   function drawPhotoScene(){
-    ctx.drawImage(staticL,0,0,W,H);
+    if(timelapse){
+      /* 昼→夜のクロスフェード（イーズイン・アウト、約6.5秒） */
+      if(!transStart){
+        if(document.readyState==='complete')transStart=performance.now()+2200;
+        PROG=0;
+      }
+      var tt=transStart?Math.min(1,Math.max(0,(performance.now()-transStart)/6500)):0;
+      PROG=tt<.5?4*tt*tt*tt:1-Math.pow(-2*tt+2,3)/2;
+      if(PROG>=1&&transitioning===0){ctx.drawImage(brightL,0,0,W,H);if(scrimL){ctx.globalAlpha=0.25;ctx.drawImage(scrimL,0,0,W,H);ctx.globalAlpha=1;}return;} /* 完了後は夜写真＋薄い陰り */
+      ctx.drawImage(staticL,0,0,W,H);
+      if(PROG>0){ctx.globalAlpha=PROG;ctx.drawImage(brightL,0,0,W,H);ctx.globalAlpha=1;}
+      if(scrimL){ctx.globalAlpha=0.25+0.75*(1-PROG);ctx.drawImage(scrimL,0,0,W,H);ctx.globalAlpha=1;}
+    }else{
+      ctx.drawImage(staticL,0,0,W,H);
+    }
     ctx.drawImage(litL,0,0,W,H);
     transitioning=0;
+    var turned=false;
     for(var i=0;i<windows.length;i++){
       var w=windows[i];
+      if(timelapse&&w.target===0&&PROG>=w.onT){w.target=1;litCount++;turned=true;}
       if(w.target>0&&w.lit<1){
         w.lit=Math.min(1,w.lit+.05);transitioning++;
         if(!w.sprite)w.sprite=blobSprite(w);
@@ -132,6 +177,7 @@
         if(w.lit>=1)stampLit(w);
       }
     }
+    if(turned)updateCnt();
   }
 
   /* ============================================================
@@ -238,11 +284,16 @@
   size();
   /* ★フォトモード: <canvas id="fx" data-photo="assets/img/hero-night.jpg"> のように
      属性で写真パスを指定すると、読み込み完了後に自動で写真の演出へ切り替わる */
-  var photoSrc=canvas.getAttribute('data-photo');
+  var photoSrc=canvas.getAttribute('data-photo'),photoDaySrc=canvas.getAttribute('data-photo-day');
   if(photoSrc){
     var pimg=new Image();
     pimg.onload=function(){photo=pimg;photoMode=true;size();if(reduce)paintStatic();};
     pimg.src=photoSrc;
+    if(photoDaySrc){
+      var dimg=new Image();
+      dimg.onload=function(){photoDay=dimg;if(photoMode){size();if(reduce)paintStatic();}};
+      dimg.src=photoDaySrc;
+    }
   }
   /* resize は間引く。スマホのアドレスバー伸縮（高さだけの小変化）では作り直さない */
   var rzT=null;
@@ -263,14 +314,14 @@
     if(ripples.length>36)ripples.splice(0,ripples.length-36);
   }
   function pos(e){var r=canvas.getBoundingClientRect();var t=e.touches?e.touches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top};}
-  hero.addEventListener('pointerdown',function(e){var p=pos(e);addRipple(p.x,p.y);});
+  hero.addEventListener('pointerdown',function(e){if(timelapse)return;var p=pos(e);addRipple(p.x,p.y);});
   hero.addEventListener('pointermove',function(e){
     var p=pos(e);pointer.px=pointer.x;pointer.py=pointer.y;pointer.x=p.x;pointer.y=p.y;
     var dx=pointer.x-pointer.px,dy=pointer.y-pointer.py,d=Math.hypot(dx,dy);
     if(d>3&&pointer.px>-500){pointer.moved+=d;
       if(pointer.moved>10){pointer.moved=0;sparks.push({x:p.x,y:p.y,vx:dx*.06+(Math.random()-.5)*.5,vy:dy*.06-(.2+Math.random()*.5),life:1,size:.8+Math.random()*1.4,warm:Math.random()<.6});if(sparks.length>240)sparks.splice(0,sparks.length-240);}}
   },{passive:true});
-  hero.addEventListener('touchstart',function(e){var p=pos(e);addRipple(p.x,p.y);},{passive:true});
+  hero.addEventListener('touchstart',function(e){if(timelapse)return;var p=pos(e);addRipple(p.x,p.y);},{passive:true});
   function drawScene(t){
     if(photoMode){drawPhotoScene();return;}
     ctx.drawImage(staticL,0,0,W,H);
@@ -327,7 +378,7 @@
   var perfN=0,perfSum=0,lastT=0,frameNo=0,transitioning=0;
   function frame(t){
     frameNo++;
-    var busy=ripples.length>0||sparks.length>0||transitioning>0;
+    var busy=ripples.length>0||sparks.length>0||transitioning>0||(timelapse&&PROG<1);
     if(!busy&&(frameNo&1)){requestAnimationFrame(frame);lastT=t;return;}
     if(lastT){var dt=t-lastT;if(dt<500){perfSum+=dt;perfN++;}
       if(!degraded&&perfN===40&&perfSum/perfN>40&&DPR>1){degraded=true;DPR=1;canvas.width=W;canvas.height=H;ctx.setTransform(1,0,0,1,0,0);}
@@ -341,6 +392,6 @@
     if(photoMode){windows.forEach(function(w){w.lit=w.target=1;w.sprite=null});ctx.drawImage(brightL,0,0,W,H);updateCnt();return;}
     windows.forEach(function(w){w.lit=w.target=1});lamps.forEach(function(l){l.lit=l.target=1});drawScene(0);updateCnt();
   }
-  if(!reduce){requestAnimationFrame(frame);setTimeout(function(){addRipple(W*.62,H*.58)},1700);}
+  if(!reduce){requestAnimationFrame(frame);setTimeout(function(){if(!timelapse)addRipple(W*.62,H*.58)},1700);}
   else{paintStatic();}
 })();
