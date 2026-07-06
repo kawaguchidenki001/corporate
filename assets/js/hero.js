@@ -1,6 +1,10 @@
 /* トップページ インタラクティブヒーロー「波紋が灯していく」（Canvas 2D）
-   空・月・3層のまちなみ・地面は buildTown() で一度だけ1枚の静止レイヤーに
-   焼き込み、毎フレームはその合成＋動くもの（窓・街灯・波紋・粒）だけを描く。
+   ─ 2つのモード ─
+   【フォトモード】canvas の data-photo 属性に夜景写真のパスを指定すると、
+     写真の明るい点（窓・街灯）を自動検出し、暗くした写真の上で
+     波紋が通過した明かりだけが元の明るさで灯っていく。
+   【描画モード】写真が無い間は、コードで描いた3層のまちなみで同じ演出をする。
+   共通: 静的な絵は一度だけオフスクリーンに焼き込み、毎フレームは合成のみ。
    rAFは1本・DPR上限2。resize は間引き、スマホのアドレスバー伸縮では再構築しない。 */
 (function(){
   var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -9,16 +13,120 @@
   var ctx=canvas.getContext('2d');
   var cntEl=document.getElementById('cnt'),totEl=document.getElementById('tot');
   var W,H,DPR,windows=[],lamps=[],beacons=[],litCount=0,staticL=null;
+  var photo=null,photoMode=false,brightL=null,litL=null,litCtx=null;
   /* コア数の少ない端末は最初から低解像度で開始（描画負荷を1/4に） */
   var degraded=!!(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4);
   /* 光のグラデーションは毎フレーム作らず、事前に1枚のスプライトにしておく（低速機対策） */
   function glowSprite(rgb){var c=document.createElement('canvas');c.width=c.height=64;var g=c.getContext('2d');var gr=g.createRadialGradient(32,32,0,32,32,32);gr.addColorStop(0,'rgba('+rgb+',1)');gr.addColorStop(.55,'rgba('+rgb+',.28)');gr.addColorStop(1,'rgba('+rgb+',0)');g.fillStyle=gr;g.beginPath();g.arc(32,32,32,0,7);g.fill();return c;}
   var warmGlow=glowSprite('255,231,184'),coolGlow=glowSprite('157,184,220');
+  function layer(){var c=document.createElement('canvas');c.width=W*DPR;c.height=H*DPR;return c;}
+
+  /* ============================================================
+     フォトモード: 写真の明かり検出と「灯り」の焼き込み
+     ============================================================ */
+  function buildPhoto(){
+    windows=[];lamps=[];beacons=[];litCount=0;
+    var iw=photo.naturalWidth,ih=photo.naturalHeight;
+    var sc=Math.max(W/iw,H/ih),dw=iw*sc,dh=ih*sc,dx=(W-dw)/2,dy=(H-dh)/2;
+
+    /* 元の明るさの写真（点灯後の姿） */
+    brightL=layer();var b=brightL.getContext('2d');b.setTransform(DPR,0,0,DPR,0,0);
+    b.drawImage(photo,dx,dy,dw,dh);
+
+    /* 消灯状態: 写真を落ち着いた夜の暗さに */
+    staticL=layer();var s=staticL.getContext('2d');s.setTransform(DPR,0,0,DPR,0,0);
+    s.drawImage(photo,dx,dy,dw,dh);
+    s.fillStyle='rgba(7,11,21,.74)';s.fillRect(0,0,W,H);
+
+    /* 灯った明かりの焼き込み先（最初は透明） */
+    litL=layer();litCtx=litL.getContext('2d');litCtx.setTransform(DPR,0,0,DPR,0,0);
+
+    /* 明かりの検出: 縮小画像の輝点を拾い、近接をグリッドで間引く */
+    var ds=Math.min(1,480/W);
+    var dc=document.createElement('canvas');
+    dc.width=Math.max(1,Math.round(W*ds));dc.height=Math.max(1,Math.round(H*ds));
+    var dctx=dc.getContext('2d');
+    dctx.drawImage(photo,dx*ds,dy*ds,dw*ds,dh*ds);
+    var data;
+    try{data=dctx.getImageData(0,0,dc.width,dc.height).data;}
+    catch(e){data=null;} /* 万一CORSで読めない写真なら描画モードへ戻す */
+    if(!data){photoMode=false;buildTown();return;}
+    /* しきい値は写真ごとに自動調整: 全画素の輝度分布から「最も明るい上位1.5%」を明かりとみなす */
+    var hist=new Array(256),hi;for(hi=0;hi<256;hi++)hist[hi]=0;
+    var n=0,y,x,o,lum;
+    for(y=1;y<dc.height-1;y++)for(x=1;x<dc.width-1;x++){
+      o=(y*dc.width+x)*4;
+      lum=data[o]*.2126+data[o+1]*.7152+data[o+2]*.0722;
+      hist[lum|0]++;n++;
+    }
+    var acc=0,thr=200;
+    for(var v=255;v>=0;v--){acc+=hist[v];if(acc>=n*0.015){thr=v;break;}}
+    thr=Math.max(110,Math.min(200,thr));
+    var cand=[];
+    for(y=1;y<dc.height-1;y++)for(x=1;x<dc.width-1;x++){
+      o=(y*dc.width+x)*4;
+      lum=data[o]*.2126+data[o+1]*.7152+data[o+2]*.0722;
+      if(lum>thr)cand.push({x:x,y:y,l:lum});
+    }
+    cand.sort(function(a,b){return b.l-a.l});
+    var occ={},cell=5;
+    for(var i=0;i<cand.length&&windows.length<650;i++){
+      var q=cand[i],cx=(q.x/cell)|0,cy=(q.y/cell)|0,ok=true;
+      for(var oy=-1;oy<=1&&ok;oy++)for(var ox=-1;ox<=1;ox++){if(occ[(cx+ox)+'_'+(cy+oy)]){ok=false;break;}}
+      if(!ok)continue;
+      occ[cx+'_'+cy]=1;
+      windows.push({x:q.x/ds,y:q.y/ds,r:7+Math.min(9,Math.max(0,(q.l-thr))/10),lit:0,target:0,sprite:null});
+    }
+
+    /* 初期点灯（約15%）: 真っ暗にしない */
+    for(i=0;i<windows.length;i++){
+      if(Math.random()<0.15){var w=windows[i];w.target=1;w.lit=1;stampLit(w);litCount++;}
+    }
+    totEl.textContent=windows.length;updateCnt();
+  }
+  /* 明かり1点ぶんの「点灯後の写真」を丸くくり抜いたスプライト */
+  function blobSprite(p){
+    var d=Math.max(4,Math.ceil(p.r*2));
+    var c=document.createElement('canvas');c.width=c.height=Math.max(2,Math.round(d*DPR));
+    var g=c.getContext('2d');g.setTransform(DPR,0,0,DPR,0,0);
+    g.drawImage(brightL,(p.x-p.r)*DPR,(p.y-p.r)*DPR,d*DPR,d*DPR,0,0,d,d);
+    g.globalCompositeOperation='destination-in';
+    var rg=g.createRadialGradient(p.r,p.r,0,p.r,p.r,p.r);
+    rg.addColorStop(0,'rgba(0,0,0,1)');rg.addColorStop(.6,'rgba(0,0,0,.85)');rg.addColorStop(1,'rgba(0,0,0,0)');
+    g.fillStyle=rg;g.fillRect(0,0,d,d);
+    return c;
+  }
+  function stampLit(w){
+    if(!w.sprite)w.sprite=blobSprite(w);
+    litCtx.drawImage(w.sprite,w.x-w.r,w.y-w.r,w.r*2,w.r*2);
+    w.sprite=null;
+  }
+  function drawPhotoScene(){
+    ctx.drawImage(staticL,0,0,W,H);
+    ctx.drawImage(litL,0,0,W,H);
+    transitioning=0;
+    for(var i=0;i<windows.length;i++){
+      var w=windows[i];
+      if(w.target>0&&w.lit<1){
+        w.lit=Math.min(1,w.lit+.05);transitioning++;
+        if(!w.sprite)w.sprite=blobSprite(w);
+        ctx.globalAlpha=w.lit;
+        ctx.drawImage(w.sprite,w.x-w.r,w.y-w.r,w.r*2,w.r*2);
+        ctx.globalAlpha=(1-w.lit)*.4; /* 点灯の瞬間のふわっとした光 */
+        ctx.drawImage(warmGlow,w.x-w.r*2,w.y-w.r*2,w.r*4,w.r*4);
+        ctx.globalAlpha=1;
+        if(w.lit>=1)stampLit(w);
+      }
+    }
+  }
+
+  /* ============================================================
+     描画モード: コードで描く3層のまちなみ（写真が無い間の姿）
+     ============================================================ */
   function buildTown(){
     windows=[];lamps=[];beacons=[];litCount=0;
     var ground=H*0.86,x,c,r;
-    staticL=document.createElement('canvas');
-    staticL.width=W*DPR;staticL.height=H*DPR;
+    staticL=layer();
     var s=staticL.getContext('2d');s.setTransform(DPR,0,0,DPR,0,0);
 
     /* --- 空・星・薄雲ごしの月・地平の街明かり --- */
@@ -110,9 +218,18 @@
     for(var li=0;li<Math.floor(W/180);li++)lamps.push({x:60+li*180+Math.random()*60,y:ground,lit:0,target:0});
     totEl.textContent=windows.length;updateCnt();
   }
+
   function updateCnt(){cntEl.innerHTML='<b>'+litCount+'</b> / '+windows.length+' lights';}
-  function size(){DPR=Math.min(devicePixelRatio||1,degraded?1:2);W=hero.clientWidth;H=hero.clientHeight;canvas.width=W*DPR;canvas.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);buildTown();}
+  function size(){DPR=Math.min(devicePixelRatio||1,degraded?1:2);W=hero.clientWidth;H=hero.clientHeight;canvas.width=W*DPR;canvas.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);if(photoMode)buildPhoto();else buildTown();}
   size();
+  /* ★フォトモード: <canvas id="fx" data-photo="assets/img/hero-night.jpg"> のように
+     属性で写真パスを指定すると、読み込み完了後に自動で写真の演出へ切り替わる */
+  var photoSrc=canvas.getAttribute('data-photo');
+  if(photoSrc){
+    var pimg=new Image();
+    pimg.onload=function(){photo=pimg;photoMode=true;size();if(reduce)paintStatic();};
+    pimg.src=photoSrc;
+  }
   /* resize は間引く。スマホのアドレスバー伸縮（高さだけの小変化）では作り直さない */
   var rzT=null;
   addEventListener('resize',function(){
@@ -141,6 +258,7 @@
   },{passive:true});
   hero.addEventListener('touchstart',function(e){var p=pos(e);addRipple(p.x,p.y);},{passive:true});
   function drawScene(t){
+    if(photoMode){drawPhotoScene();return;}
     ctx.drawImage(staticL,0,0,W,H);
     /* 航空障害灯: ゆっくり明滅（reduced-motion時は静止） */
     for(var i=0;i<beacons.length;i++){
@@ -204,7 +322,11 @@
     drawScene(t);drawRipples();drawSparks();requestAnimationFrame(frame);
   }
   // reduced-motion 時の静止画（初回表示と resize 後の再描画で共用）
-  function paintStatic(){windows.forEach(function(w){w.lit=w.target=1});lamps.forEach(function(l){l.lit=l.target=1});litCount=windows.length;drawScene(0);updateCnt();}
+  function paintStatic(){
+    litCount=windows.length;
+    if(photoMode){windows.forEach(function(w){w.lit=w.target=1;w.sprite=null});ctx.drawImage(brightL,0,0,W,H);updateCnt();return;}
+    windows.forEach(function(w){w.lit=w.target=1});lamps.forEach(function(l){l.lit=l.target=1});drawScene(0);updateCnt();
+  }
   if(!reduce){requestAnimationFrame(frame);setTimeout(function(){addRipple(W*.62,H*.58)},1700);}
   else{paintStatic();}
 })();
