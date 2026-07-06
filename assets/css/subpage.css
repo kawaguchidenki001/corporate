@@ -1,0 +1,14 @@
+@charset "UTF-8";
+/* 下層ページ共通スタイル（services / works / recruit / company / contact） */
+  /* sub-page overrides */
+  header#hdr{background:rgba(255,255,255,.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  header#hdr .brand .nm{color:var(--ink)}header#hdr .brand .nm small{color:var(--accent)}
+  header#hdr .menu a{color:var(--ink2)}header#hdr .menu a:hover{color:var(--accent)}header#hdr .menu .contact{color:var(--ink);border-color:var(--ink)}
+  header#hdr .burger span{background:var(--ink)}
+  .page-head{padding:150px 0 30px}
+  .page-head .crumb{font-family:var(--label);font-size:.66rem;letter-spacing:.16em;color:var(--muted)}
+  .page-head h1{font-family:var(--mincho);font-weight:800;font-size:clamp(2.2rem,4.6vw,3.4rem);letter-spacing:.06em;line-height:1.5;margin:18px 0 0}
+  .page-head .lead{color:var(--ink2);max-width:660px;margin-top:22px;font-size:1.02rem;line-height:2.1}
+  .cta-band{background:var(--paper2);text-align:center;padding:110px 0}
+  .cta-band h2{font-family:var(--mincho);font-weight:700;font-size:clamp(1.6rem,3vw,2.2rem);letter-spacing:.05em;line-height:1.6;margin-bottom:26px}
+  .note{font-family:var(--label);font-size:.76rem;color:var(--muted);letter-spacing:.04em;margin-top:34px;text-align:center}
