@@ -50,7 +50,63 @@
   .form-thanks .t2{color:var(--ink2);font-size:.95rem;line-height:2.2}
   .submit button:disabled{opacity:.55;cursor:default}
 </style>
-<noscript><style>#loader{display:none}.reveal{opacity:1;transform:none}</style></noscript>
+<noscript><style>#loader{display:none}.reveal{opacity:1;transform:none}#contact-form{display:none}</style></noscript>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "ContactPage",
+      "@id": "https://kawaguchi-denki.com/contact.html",
+      "url": "https://kawaguchi-denki.com/contact.html",
+      "name": "お問い合わせ｜河口電機株式会社",
+      "description": "河口電機株式会社へのお問い合わせ。電気工事のご相談・お見積もり、採用に関するご質問など、フォームまたはお電話（058-275-4141）でお気軽にご連絡ください。",
+      "inLanguage": "ja",
+      "isPartOf": {
+        "@id": "https://kawaguchi-denki.com/#website"
+      },
+      "about": {
+        "@id": "https://kawaguchi-denki.com/#company"
+      },
+      "publisher": {
+        "@id": "https://kawaguchi-denki.com/#company"
+      }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "ホーム",
+          "item": "https://kawaguchi-denki.com/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "お問い合わせ",
+          "item": "https://kawaguchi-denki.com/contact.html"
+        }
+      ]
+    },
+    {
+      "@type": "Electrician",
+      "@id": "https://kawaguchi-denki.com/#company",
+      "name": "河口電機株式会社",
+      "url": "https://kawaguchi-denki.com/",
+      "telephone": "+81-58-275-4141",
+      "address": {
+        "@type": "PostalAddress",
+        "postalCode": "501-6121",
+        "addressRegion": "岐阜県",
+        "addressLocality": "岐阜市",
+        "streetAddress": "柳津町下佐波2丁目96番地",
+        "addressCountry": "JP"
+      }
+    }
+  ]
+}
+</script>
 </head>
 <body>
 <a class="skip" href="#main">本文へスキップ</a>
@@ -68,7 +124,7 @@
   </nav>
   <button class="burger" id="burger" aria-label="メニュー" aria-controls="menu" aria-expanded="false"><span></span><span></span><span></span></button>
 </div></header>
-<main id="main"><section class="page-head"><div class="wrap"><div class="label"><span class="en">Contact</span><span class="jp">お問い合わせ</span></div><h1>お問い合わせ</h1><p class="lead">工事のご相談・お見積もり、採用に関するお問い合わせなど、お気軽にご連絡ください。土・日・祝を除く3営業日以内にご返信いたします。</p></div></section><section style="padding-top:30px"><div class="wrap"><form class="form" id="contact-form" method="post"><div class="field"><label for="f-company">会社名・団体名</label><input type="text" id="f-company" name="company" autocomplete="organization" placeholder="例：〇〇株式会社"></div><div class="field"><label for="f-name">お名前<span class="req">必須</span></label><input type="text" id="f-name" name="name" required autocomplete="name" placeholder="例：山田 太郎"></div><div class="field"><label for="f-email">メールアドレス<span class="req">必須</span></label><input type="email" id="f-email" name="email" required autocomplete="email" placeholder="例：info@example.com"></div><div class="field"><label for="f-tel">電話番号</label><input type="tel" id="f-tel" name="tel" autocomplete="tel" placeholder="例：058-000-0000"></div><div class="field"><label for="f-type">お問い合わせ種別</label><select id="f-type" name="type"><option>工事のご相談・お見積もり</option><option>採用について</option><option>その他</option></select></div><div class="field"><label for="f-message">お問い合わせ内容<span class="req">必須</span></label><textarea id="f-message" name="message" required placeholder="ご相談内容をご記入ください。"></textarea></div><div class="field hp" aria-hidden="true"><label for="f-website">この欄には入力しないでください</label><input type="text" id="f-website" name="website" tabindex="-1" autocomplete="off"></div><p class="form-error" id="form-error" role="alert" hidden></p><div class="submit"><button type="submit" id="submit-btn">送信する</button></div></form><div class="form-thanks" id="form-thanks" hidden tabindex="-1"><p class="t1">お問い合わせを受け付けました。<br>ありがとうございます。</p><p class="t2">内容を確認のうえ、土・日・祝を除く3営業日以内に担当者よりご連絡いたします。<br>お急ぎの場合は、お電話（058-275-4141）にてお問い合わせください。</p></div><p class="note">※ フォームがご利用いただけない場合は、お電話（平日 8:00–17:00）またはFAXでもお問い合わせを承ります。</p><div class="cinfo"><div><div class="k">お電話でのお問い合わせ</div><div class="v">058-275-4141<small>受付 平日 8:00–17:00</small></div></div><div><div class="k">FAX</div><div class="v">058-275-4133<small>24時間受付</small></div></div></div></div></section></main>
+<main id="main"><section class="page-head"><div class="wrap"><div class="label"><span class="en">Contact</span><span class="jp">お問い合わせ</span></div><h1>お問い合わせ</h1><p class="lead">工事のご相談・お見積もり、採用に関するお問い合わせなど、お気軽にご連絡ください。土・日・祝を除く3営業日以内にご返信いたします。</p></div></section><section style="padding-top:30px"><div class="wrap"><noscript><p class="form-error" style="margin-bottom:34px">フォームのご利用には JavaScript が必要です。お手数ですが、お電話（058-275-4141）またはFAX（058-275-4133）にてお問い合わせください。</p></noscript><form class="form" id="contact-form"><div class="field"><label for="f-company">会社名・団体名</label><input type="text" id="f-company" name="company" autocomplete="organization" placeholder="例：〇〇株式会社"></div><div class="field"><label for="f-name">お名前<span class="req">必須</span></label><input type="text" id="f-name" name="name" required autocomplete="name" placeholder="例：山田 太郎"></div><div class="field"><label for="f-email">メールアドレス<span class="req">必須</span></label><input type="email" id="f-email" name="email" required autocomplete="email" placeholder="例：info@example.com"></div><div class="field"><label for="f-tel">電話番号</label><input type="tel" id="f-tel" name="tel" autocomplete="tel" placeholder="例：058-000-0000"></div><div class="field"><label for="f-type">お問い合わせ種別</label><select id="f-type" name="type"><option>工事のご相談・お見積もり</option><option>採用について</option><option>その他</option></select></div><div class="field"><label for="f-message">お問い合わせ内容<span class="req">必須</span></label><textarea id="f-message" name="message" required placeholder="ご相談内容をご記入ください。"></textarea></div><div class="field hp" aria-hidden="true"><label for="f-website">この欄には入力しないでください</label><input type="text" id="f-website" name="website" tabindex="-1" autocomplete="off"></div><p class="form-error" id="form-error" role="alert" hidden></p><div class="submit"><button type="submit" id="submit-btn">送信する</button></div></form><div class="form-thanks" id="form-thanks" hidden tabindex="-1"><p class="t1">お問い合わせを受け付けました。<br>ありがとうございます。</p><p class="t2">内容を確認のうえ、土・日・祝を除く3営業日以内に担当者よりご連絡いたします。<br>お急ぎの場合は、お電話（058-275-4141）にてお問い合わせください。</p></div><p class="note">※ フォームがご利用いただけない場合は、お電話（平日 8:00–17:00）またはFAXでもお問い合わせを承ります。</p><div class="cinfo"><div><div class="k">お電話でのお問い合わせ</div><div class="v">058-275-4141<small>受付 平日 8:00–17:00</small></div></div><div><div class="k">FAX</div><div class="v">058-275-4133<small>24時間受付</small></div></div></div></div></section></main>
 <footer><div class="wrap">
   <div class="ft-top">
     <div class="ft-brand"><div class="nm">河口電機株式会社</div><p>岐阜市を拠点とする電気設備工事・空調設備工事の専門企業。設計から施工、保守まで一貫して対応します。</p></div>

@@ -48,7 +48,8 @@
     fetch(GAS_ENDPOINT, { method: 'POST', body: body })
       .then(function (res) {
         if (!res.ok) throw new Error('HTTP ' + res.status);
-        return res.json().catch(function () { return { ok: true }; });
+        // GAS は必ず JSON を返す設計。JSON でない応答（誤設定・GAS側異常）は失敗として扱う
+        return res.json();
       })
       .then(function (data) {
         if (data && data.ok === false) throw new Error(data.error || 'server error');

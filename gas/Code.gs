@@ -31,49 +31,68 @@ function doPost(e) {
     }
 
     // --- スプレッドシートに記録 ---
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var sheet = ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
-    if (sheet.getLastRow() === 0) {
-      sheet.appendRow(['受信日時', '会社名・団体名', 'お名前', 'メールアドレス', '電話番号', '種別', '内容', '送信元ページ']);
+    // 同時アクセス時のシート二重作成・ヘッダ重複を防ぐ
+    var lock = LockService.getScriptLock();
+    lock.waitLock(10000);
+    try {
+      var ss = SpreadsheetApp.getActiveSpreadsheet();
+      var sheet = ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
+      if (sheet.getLastRow() === 0) {
+        sheet.appendRow(['受信日時', '会社名・団体名', 'お名前', 'メールアドレス', '電話番号', '種別', '内容', '送信元ページ']);
+      }
+      sheet.appendRow([
+        new Date(),
+        cell_(p.company),
+        cell_(p.name),
+        cell_(p.email),
+        cell_(p.tel),
+        cell_(p.type),
+        cell_(p.message),
+        cell_(p.page)
+      ]);
+    } finally {
+      lock.releaseLock();
     }
-    sheet.appendRow([
-      new Date(),
-      p.company || '',
-      p.name,
-      p.email,
-      p.tel || '',
-      p.type || '',
-      p.message,
-      p.page || ''
-    ]);
 
     // --- メール通知 ---
-    MailApp.sendEmail({
-      to: NOTIFY_TO,
-      replyTo: p.email,
-      subject: '【HPお問い合わせ】' + (p.type ? p.type + '：' : '') + p.name + ' 様',
-      body: [
-        'ホームページのお問い合わせフォームから送信がありました。',
-        '',
-        '■ 会社名・団体名： ' + (p.company || '（未記入）'),
-        '■ お名前　　　　： ' + p.name,
-        '■ メール　　　　： ' + p.email,
-        '■ 電話番号　　　： ' + (p.tel || '（未記入）'),
-        '■ 種別　　　　　： ' + (p.type || '（未選択）'),
-        '',
-        '■ お問い合わせ内容：',
-        p.message,
-        '',
-        '----',
-        'このメールに返信すると、お客様（' + p.email + '）宛に返信されます。',
-        '記録: スプレッドシート「' + SHEET_NAME + '」'
-      ].join('\n')
-    });
+    // 記録は完了しているため、メール送信の失敗（クォータ超過等）で
+    // 訪問者にエラーを返さない。失敗はログにのみ残す。
+    try {
+      MailApp.sendEmail({
+        to: NOTIFY_TO,
+        replyTo: p.email,
+        subject: '【HPお問い合わせ】' + (p.type ? p.type + '：' : '') + p.name + ' 様',
+        body: [
+          'ホームページのお問い合わせフォームから送信がありました。',
+          '',
+          '■ 会社名・団体名： ' + (p.company || '（未記入）'),
+          '■ お名前　　　　： ' + p.name,
+          '■ メール　　　　： ' + p.email,
+          '■ 電話番号　　　： ' + (p.tel || '（未記入）'),
+          '■ 種別　　　　　： ' + (p.type || '（未選択）'),
+          '',
+          '■ お問い合わせ内容：',
+          p.message,
+          '',
+          '----',
+          'このメールに返信すると、お客様（' + p.email + '）宛に返信されます。',
+          '記録: スプレッドシート「' + SHEET_NAME + '」'
+        ].join('\n')
+      });
+    } catch (mailErr) {
+      console.error('メール通知に失敗（シート記録は完了）: ' + mailErr);
+    }
 
     return json_({ ok: true });
   } catch (err) {
     return json_({ ok: false, error: String(err) });
   }
+}
+
+// セル値の先頭が = + - @ 等のとき数式として解釈されるのを防ぐ（数式インジェクション対策）
+function cell_(v) {
+  v = String(v == null ? '' : v);
+  return /^[=+\-@\t\r]/.test(v) ? "'" + v : v;
 }
 
 function json_(obj) {

@@ -25,7 +25,7 @@
   }
   function updateCnt(){cntEl.innerHTML='<b>'+litCount+'</b> / '+windows.length+' lights';}
   function size(){DPR=Math.min(devicePixelRatio||1,2);W=hero.clientWidth;H=hero.clientHeight;canvas.width=W*DPR;canvas.height=H*DPR;ctx.setTransform(DPR,0,0,DPR,0,0);buildTown();}
-  size();addEventListener('resize',size);
+  size();addEventListener('resize',function(){size();if(reduce)paintStatic();});
   var ripples=[],sparks=[],pointer={x:-999,y:-999,px:-999,py:-999,moved:0};
   function addRipple(x,y){
     for(var i=0;i<3;i++)ripples.push({x:x,y:y,r:2+i*10,v:2.5-i*.35,life:1,max:Math.max(W,H)*.45,warm:i%2===0});
@@ -86,6 +86,8 @@
     }
   }
   function frame(t){bg();town(t);drawRipples();drawSparks();requestAnimationFrame(frame);}
+  // reduced-motion 時の静止画（初回表示と resize 後の再描画で共用）
+  function paintStatic(){windows.forEach(function(w){w.lit=w.target=1});lamps.forEach(function(l){l.lit=l.target=1});bg();town(0);litCount=windows.length;updateCnt();}
   if(!reduce){requestAnimationFrame(frame);setTimeout(function(){addRipple(W*.62,H*.58)},1700);}
-  else{windows.forEach(function(w){w.lit=w.target=1});lamps.forEach(function(l){l.lit=l.target=1});bg();town(0);litCount=windows.length;updateCnt();}
+  else{paintStatic();}
 })();
